@@ -4,12 +4,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initiateViews();
         setRecyclerView();
-        checkTextChanges();
+//        checkTextChanges();
+        getDatafromAPI();
     }
 
     private void initiateViews() {
@@ -47,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                getDatafromAPI(edtNama.getText().toString());
             }
 
             @Override
@@ -57,7 +68,34 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getDatafromAPI(String nama) {
+    private void getDatafromAPI() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.github.com/search/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
+        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
+        Call<ArrayList<UserModel>> call = retrofitAPI.getAllData();
+        call.enqueue(new Callback<ArrayList<UserModel>>() {
+            @Override
+            public void onResponse(Call<ArrayList<UserModel>> call, Response<ArrayList<UserModel>> response) {
+                if (response.isSuccessful()) {
+
+                    userModels = response.body();
+
+                    for (int i = 0; i < userModels.size(); i++) {
+                        userAdapter = new UserAdapter(MainActivity.this, userModels);
+                        LinearLayoutManager manager = new LinearLayoutManager(MainActivity.this);
+                        rvNama.setLayoutManager(manager);
+                        rvNama.setAdapter(userAdapter);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<UserModel>> call, Throwable t) {
+                Toast.makeText(MainActivity.this, t.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

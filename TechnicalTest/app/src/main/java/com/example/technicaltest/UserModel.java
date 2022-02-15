@@ -1,13 +1,13 @@
 package com.example.technicaltest;
 
 public class UserModel {
-    private String namaUser;
+    private String login;
 
-    public UserModel(String namaUser) {
-        this.namaUser = namaUser;
+    public UserModel(String login) {
+        this.login = login;
     }
 
-    public String getNamaUser() {
-        return namaUser;
+    public String getLogin() {
+        return login;
     }
 }
